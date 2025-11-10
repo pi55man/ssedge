@@ -1,3 +1,6 @@
+pub mod ssh;
+pub mod log;
+pub mod db;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -11,4 +14,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+    
 }
+
+p:q
+:wq
+:w
