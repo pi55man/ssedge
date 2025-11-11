@@ -61,18 +61,24 @@ function Devices() {
 const handleAddDevice = async (e: React.FormEvent) => {
     e.preventDefault();
     logger.info(`Connecting and adding device: ${newDevice.name} (${newDevice.ip})`);
+    setLoading(true);
     try {
-      await invoke("connect_and_add_device", { 
+      const result = await invoke("connect_and_add_device", { 
         hostname: newDevice.name, 
         ip: newDevice.ip 
       });
       logger.info("Device connected and added successfully");
+      console.log("Device connection result:", result);
       setNewDevice({ name: "", ip: "" });
       setShowAddForm(false);
-      fetchDevices();
+      await fetchDevices();
     } catch (error) {
       logger.error(`Failed to connect and add device: ${error}`);
       console.error("Failed to connect and add device:", error);
+      // Show error to user - you might want to add a notification here
+      alert(`Failed to add device: ${error}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -83,7 +89,6 @@ const handleAddDevice = async (e: React.FormEvent) => {
       logger.info(`Device deleted successfully: ${id}`);
       fetchDevices();
     } catch (error) {
-      console.error("Failed to delete device:", error);
     }
   };
 
