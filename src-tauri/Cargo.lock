@@ -2160,6 +2160,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "num_threads"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c7398b9c8b70908f6371f47ed36737907c87c52af34c268fed0bf0ceb92ead9"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "objc-sys"
 version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3445,6 +3454,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d66dc143e6b11c1eddc06d5c423cfc97062865baf299914ab64caa38182078fe"
 
 [[package]]
+name = "simplelog"
+version = "0.12.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "16257adbfaef1ee58b1363bdc0664c9b8e1e30aed86049635fb5f147d065a9c0"
+dependencies = [
+ "log",
+ "termcolor",
+ "time",
+]
+
+[[package]]
 name = "siphasher"
 version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3533,11 +3553,13 @@ dependencies = [
  "anyhow",
  "dirs",
  "env_logger",
+ "log",
  "r2d2",
  "r2d2_sqlite",
  "rusqlite",
  "serde",
  "serde_json",
+ "simplelog",
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
@@ -4044,7 +4066,9 @@ checksum = "91e7d9e3bb61134e77bde20dd4825b97c010155709965fedf0f49bb138e52a9d"
 dependencies = [
  "deranged",
  "itoa",
+ "libc",
  "num-conv",
+ "num_threads",
  "powerfmt",
  "serde",
  "time-core",

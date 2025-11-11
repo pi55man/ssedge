@@ -9,7 +9,10 @@ pub struct Db {
 
 impl Db {
     pub fn new(db_path: &str) -> Result<Self> {
-        let manager = SqliteConnectionManager::file(db_path);
+        let manager = SqliteConnectionManager::file(db_path).with_flags(
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE | rusqlite::OpenFlags::SQLITE_OPEN_CREATE,
+        );
+
         let pool = Pool::new(manager)?;
         let db = Db { pool };
 
@@ -58,9 +61,10 @@ impl Db {
     }
 
     /// Get a pooled connection for DB operations
-    pub fn get_conn(&self) -> Result<PooledConnection<SqliteConnectionManager>> {
+    fn get_conn(&self) -> Result<PooledConnection<SqliteConnectionManager>> {
         Ok(self.pool.get()?)
     }
+
     pub fn insert_device(&self, name: &str, ip: &str, last_seen: Option<i64>) -> Result<usize> {
         let conn = self.get_conn()?;
         conn.execute(
@@ -216,9 +220,6 @@ pub struct Device {
     pub name: String,
     pub ip: String,
     pub last_seen: Option<i64>,
-    pub device_id: i32,
-    pub status: String,
-    pub last_checked: Option<i64>,
 }
 pub struct Tunnel {
     pub id: i32,
@@ -240,5 +241,4 @@ pub struct CommandLog {
     pub command: String,
     pub output: Option<String>,
     pub timestamp: i64,
-    pub last_seen: Option<i64>,
 }
