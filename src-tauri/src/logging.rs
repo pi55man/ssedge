@@ -26,6 +26,11 @@ pub fn init_logger() -> Result<(), String> {
     Ok(())
 }
 
-pub fn get_log_file_path() -> Option<PathBuf> {
-    LOG_FILE.lock().unwrap().clone()
+pub fn get_log_file_path_string() -> String {
+    LOG_FILE
+        .lock()
+        .unwrap()
+        .as_ref()
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_default()
 }

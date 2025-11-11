@@ -12,7 +12,6 @@ impl Db {
         let manager = SqliteConnectionManager::file(db_path).with_flags(
             rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE | rusqlite::OpenFlags::SQLITE_OPEN_CREATE,
         );
-
         let pool = Pool::new(manager)?;
         let db = Db { pool };
 
@@ -73,7 +72,24 @@ impl Db {
         )
         .map_err(Into::into)
     }
+    pub fn get_all_devices(&self) -> Result<Vec<Device>> {
+        let conn = self.get_conn()?;
+        let mut stmt = conn.prepare("SELECT id, name, ip, last_seen FROM devices")?;
+        let rows = stmt.query_map([], |row| {
+            Ok(Device {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                ip: row.get(2)?,
+                last_seen: row.get(3)?,
+            })
+        })?;
 
+        let mut devices = Vec::new();
+        for device in rows {
+            devices.push(device?);
+        }
+        Ok(devices)
+    }
     pub fn delete_device(&self, id: i32) -> Result<usize> {
         let conn = self.get_conn()?;
         conn.execute("DELETE FROM devices WHERE id = ?1", params![id])
@@ -215,18 +231,23 @@ impl Db {
     }
 }
 
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct Device {
     pub id: i32,
     pub name: String,
     pub ip: String,
     pub last_seen: Option<i64>,
 }
+
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct Tunnel {
     pub id: i32,
     pub device_id: i32,
     pub status: String,
     pub last_checked: Option<i64>,
 }
+
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct Metric {
     pub id: i32,
     pub device_id: i32,
@@ -235,6 +256,7 @@ pub struct Metric {
     pub timestamp: i64,
 }
 
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct CommandLog {
     pub id: i32,
     pub device_id: i32,

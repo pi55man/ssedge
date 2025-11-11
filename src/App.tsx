@@ -1,51 +1,89 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
+import { AppShell, Tabs, Container, Title, TextInput, Button, Paper, Group } from "@mantine/core";
+import { IconHome, IconDevices } from "@tabler/icons-react";
+import Devices from "./Devices";
+import { logger } from "./logger";
 
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
   const [name, setName] = useState("");
+  const [activeTab, setActiveTab] = useState<string | null>("home");
 
   async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+    logger.info(`Greeting user: ${name}`);
+    try {
+      const msg = await invoke("greet", { name });
+      setGreetMsg(msg as string);
+      logger.info("Greet command executed successfully");
+    } catch (error) {
+      logger.error(`Failed to greet: ${error}`);
+    }
   }
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
+    <AppShell
+      padding="md"
+      styles={{
+        main: {
+          background: '#1a1b1e',
+        },
+      }}
+    >
+      <Container size="xl" p="xl">
+        <Tabs value={activeTab} onChange={setActiveTab} variant="pills" radius="md">
+          <Tabs.List mb="xl">
+            <Tabs.Tab value="home" leftSection={<IconHome size={16} />}>
+              Home
+            </Tabs.Tab>
+            <Tabs.Tab value="devices" leftSection={<IconDevices size={16} />}>
+              Devices
+            </Tabs.Tab>
+          </Tabs.List>
 
-      <div className="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
+          <Tabs.Panel value="home">
+            <Paper shadow="md" p="xl" radius="md" withBorder>
+              <Title order={1} mb="xl" ta="center">
+                Welcome to Tauri + React
+              </Title>
 
       <form
-        className="row"
         onSubmit={(e) => {
           e.preventDefault();
           greet();
         }}
       >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
+                <Group justify="center" gap="md">
+                  <TextInput
+                    placeholder="Enter a name..."
+                    value={name}
+                    onChange={(e) => setName(e.currentTarget.value)}
+          size="md"
+                    style={{ width: 300 }}
         />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
+                  <Button type="submit" size="md" variant="gradient" gradient={{ from: 'blue', to: 'cyan' }}>
+                    Greet
+                  </Button>
+        </Group>
+              </form>
+              
+              {greetMsg && (
+                <Title order={3} mt="xl" ta="center" c="blue">
+                  {greetMsg}
+                </Title>
+              )}
+            </Paper>
+          </Tabs.Panel>
+
+          <Tabs.Panel value="devices">
+            <Devices />
+        </Tabs.Panel>
+        </Tabs>
+      </Container>
+    </AppShell>
   );
 }
 
 export default App;
+ 
+ 
