@@ -61,6 +61,19 @@ pub async fn connect_and_add_device(
     state: State<'_, AppState>,
     hostname: String,
     ip: String,
-) -> Result<(), String> {
-    crate::ssh::new_connection(state, hostname, ip).await
+) -> Result<String, String> {
+    info!(
+        "Starting connect_and_add_device for hostname={}, ip={}",
+        hostname, ip
+    );
+    match crate::ssh::new_connection(state, hostname.clone(), ip).await {
+        Ok(_) => {
+            info!("Successfully connected and added device: {}", hostname);
+            Ok("Connected successfully".to_string())
+        }
+        Err(e) => {
+            error!("Failed to connect to device {}: {}", hostname, e);
+            Err(format!("Connection failed: {}", e))
+        }
+    }
 }

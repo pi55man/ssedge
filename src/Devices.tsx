@@ -21,8 +21,6 @@ import {
   IconPlus,
   IconTrash,
   IconDeviceDesktop,
-  IconCircleFilled,
-  IconX,
 } from "@tabler/icons-react";
 import { logger } from "./logger";
 
@@ -36,6 +34,7 @@ interface Device {
 function Devices() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(false);
+  const [addingDevice, setAddingDevice] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newDevice, setNewDevice] = useState({ name: "", ip: "" });
 
@@ -58,16 +57,16 @@ function Devices() {
     }
   };
 
-const handleAddDevice = async (e: React.FormEvent) => {
+  const handleAddDevice = async (e: React.FormEvent) => {
     e.preventDefault();
     logger.info(`Connecting and adding device: ${newDevice.name} (${newDevice.ip})`);
-    setLoading(true);
+    setAddingDevice(true);
     try {
       const result = await invoke("connect_and_add_device", { 
         hostname: newDevice.name, 
         ip: newDevice.ip 
       });
-      logger.info("Device connected and added successfully");
+      logger.info("Device connected and added successfully", result);
       console.log("Device connection result:", result);
       setNewDevice({ name: "", ip: "" });
       setShowAddForm(false);
@@ -75,10 +74,9 @@ const handleAddDevice = async (e: React.FormEvent) => {
     } catch (error) {
       logger.error(`Failed to connect and add device: ${error}`);
       console.error("Failed to connect and add device:", error);
-      // Show error to user - you might want to add a notification here
       alert(`Failed to add device: ${error}`);
     } finally {
-      setLoading(false);
+      setAddingDevice(false);
     }
   };
 
@@ -89,6 +87,8 @@ const handleAddDevice = async (e: React.FormEvent) => {
       logger.info(`Device deleted successfully: ${id}`);
       fetchDevices();
     } catch (error) {
+      logger.error(`Failed to delete device: ${error}`);
+      console.error("Failed to delete device:", error);
     }
   };
 
@@ -110,10 +110,10 @@ const handleAddDevice = async (e: React.FormEvent) => {
       <Group position="apart" mb="md">
         <Title order={2}>Devices</Title>
         <Group>
-          <ActionIcon onClick={fetchDevices} variant="outline">
+          <ActionIcon onClick={fetchDevices} variant="outline" disabled={loading || addingDevice}>
             <IconRefresh />
           </ActionIcon>
-          <ActionIcon onClick={() => setShowAddForm((v) => !v)} variant="outline">
+          <ActionIcon onClick={() => setShowAddForm((v) => !v)} variant="outline" disabled={addingDevice}>
             <IconPlus />
           </ActionIcon>
         </Group>
@@ -132,7 +132,11 @@ const handleAddDevice = async (e: React.FormEvent) => {
                     <IconDeviceDesktop size={32} />
                     <Text weight={500}>{device.name}</Text>
                   </Group>
-                  <ActionIcon color="red" onClick={() => handleDeleteDevice(device.id)}>
+                  <ActionIcon 
+                    color="red" 
+                    onClick={() => handleDeleteDevice(device.id)}
+                    disabled={addingDevice}
+                  >
                     <IconTrash />
                   </ActionIcon>
                 </Group>
@@ -156,16 +160,26 @@ const handleAddDevice = async (e: React.FormEvent) => {
                 value={newDevice.name}
                 onChange={(e) => setNewDevice({ ...newDevice, name: e.currentTarget.value })}
                 required
+                disabled={addingDevice}
               />
               <TextInput
                 label="IP Address"
                 value={newDevice.ip}
                 onChange={(e) => setNewDevice({ ...newDevice, ip: e.currentTarget.value })}
                 required
+                disabled={addingDevice}
               />
               <Group position="right">
-                <Button type="submit">Add Device</Button>
-                <Button variant="outline" color="red" onClick={() => setShowAddForm(false)}>
+                <Button type="submit" loading={addingDevice}>Add Device</Button>
+                <Button 
+                  variant="outline" 
+                  color="red" 
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setNewDevice({ name: "", ip: "" });
+                  }}
+                  disabled={addingDevice}
+                >
                   Cancel
                 </Button>
               </Group>
@@ -178,3 +192,4 @@ const handleAddDevice = async (e: React.FormEvent) => {
 }
 
 export default Devices;
+
