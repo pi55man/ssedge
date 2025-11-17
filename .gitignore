@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 
 ssedge.db*
+.github/copilot-instructions.md
+LOCAL_TESTING.md

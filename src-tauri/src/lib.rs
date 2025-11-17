@@ -30,6 +30,9 @@ pub fn run() {
             command::delete_device,
             command::get_log_path,
             command::connect_and_add_device,
+            command::connect_and_add_device_with_config,
+            command::test_ssh_connection,
+            command::get_device_metrics,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

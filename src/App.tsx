@@ -75,9 +75,6 @@ function Home() {
           </Paper>
         </Group>
 
-        <Text size="sm" color="dimmed" align="center" mt="xl">
-          Click on the devices icon in the sidebar to get started
-        </Text>
       </Stack>
     </Center>
   );

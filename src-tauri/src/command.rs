@@ -77,3 +77,78 @@ pub async fn connect_and_add_device(
         }
     }
 }
+
+#[tauri::command]
+pub async fn connect_and_add_device_with_config(
+    state: State<'_, AppState>,
+    hostname: String,
+    ip: String,
+    username: Option<String>,
+    port: Option<u16>,
+    strict_host_key_checking: Option<bool>,
+    connect_timeout: Option<u64>,
+) -> Result<String, String> {
+    info!(
+        "Starting connect_and_add_device_with_config for hostname={}, ip={}, username={:?}, port={:?}",
+        hostname, ip, username, port
+    );
+
+    let config = crate::ssh::SshConfig {
+        username,
+        port,
+        strict_host_key_checking,
+        connect_timeout,
+    };
+
+    match crate::ssh::new_connection_with_config(state, hostname.clone(), ip, config).await {
+        Ok(_) => {
+            info!("Successfully connected and added device: {}", hostname);
+            Ok("Connected successfully".to_string())
+        }
+        Err(e) => {
+            error!("Failed to connect to device {}: {}", hostname, e);
+            Err(format!("Connection failed: {}", e))
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn test_ssh_connection(
+    hostname: String,
+    ip: String,
+    username: Option<String>,
+    port: Option<u16>,
+    strict_host_key_checking: Option<bool>,
+    connect_timeout: Option<u64>,
+) -> Result<String, String> {
+    info!("Testing SSH connection to hostname={}, ip={}", hostname, ip);
+
+    let config = crate::ssh::SshConfig {
+        username,
+        port,
+        strict_host_key_checking,
+        connect_timeout,
+    };
+
+    crate::ssh::test_connection(hostname, ip, config).await
+}
+
+#[tauri::command]
+pub async fn get_device_metrics(
+    ip: String,
+    username: Option<String>,
+    port: Option<u16>,
+    strict_host_key_checking: Option<bool>,
+    connect_timeout: Option<u64>,
+) -> Result<crate::ssh::SystemMetrics, String> {
+    info!("Fetching system metrics for device at ip={}", ip);
+
+    let config = crate::ssh::SshConfig {
+        username,
+        port,
+        strict_host_key_checking,
+        connect_timeout,
+    };
+
+    crate::ssh::get_system_metrics(ip, config).await
+}
